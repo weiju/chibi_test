@@ -22,7 +22,7 @@ your project.
 
 ### Example
 
-```
+```C
 #include "chibi.h"
 
 CHIBI_TEST(MyTest)
