@@ -57,6 +57,27 @@ void _chibi_suite_run(chibi_suite *suite, int verbose)
   if (verbose) fprintf(stderr, "\n");
 }
 
+void chibi_suite_run_tap(chibi_suite *suite)
+{
+  chibi_testcase *testcase = suite->head;
+  int count = 0;
+  while (testcase) {
+    count++;
+    testcase = testcase->next;
+  }
+  testcase = suite->head;
+  fprintf(stdout, "1..%d\n", count);
+  count = 1;
+  while (testcase) {
+    testcase->fun(testcase);
+    if (testcase->success) fprintf(stdout, "ok %d - %s\n", count, testcase->fname);
+    else fprintf(stdout, "not ok %d - %s\n", count, testcase->fname);
+    testcase = testcase->next;
+    count++;
+  }
+}
+
+
 void chibi_suite_summary(chibi_suite *suite)
 {
   int num_tests = 0, num_failures = 0, i = 1;

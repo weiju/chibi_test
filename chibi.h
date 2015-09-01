@@ -27,6 +27,7 @@ typedef struct _chibi_summary_data {
 extern chibi_suite *chibi_suite_new();
 extern void chibi_suite_delete(chibi_suite *suite);
 extern void _chibi_suite_run(chibi_suite *suite, int verbose);
+extern void chibi_suite_run_tap(chibi_suite *suite);
 extern void chibi_suite_summary(chibi_suite *suite);
 extern void chibi_suite_summary_data(chibi_suite *suite, chibi_summary_data *summary);
 extern void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *fname);
