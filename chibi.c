@@ -139,15 +139,20 @@ static char *assemble_message2(const char *msg1, const char *msg2,
  *
  **********************************************************************/
 
+void _exit_on_fail(chibi_testcase *tc)
+{
+#ifndef AMIGA
+    longjmp(tc->env, 0);
+#endif
+}
+
 void _chibi_assert_not_null(chibi_testcase *tc, void *ptr, const char *msg, const char *srcfile,
                             int line)
 {
   if (ptr == NULL) {
     tc->error_msg = assemble_message(msg, srcfile, tc->fname, line);
     tc->success = 0;
-#ifndef AMIGA
-    longjmp(tc->env, 0);
-#endif
+    _exit_on_fail(tc);
   }
 }
 
@@ -155,9 +160,7 @@ void _chibi_fail(chibi_testcase *tc, const char *msg, const char *srcfile, int l
 {
   tc->error_msg = assemble_message(msg, srcfile, tc->fname, line);
   tc->success = 0;
-#ifndef AMIGA
-  longjmp(tc->env, 0);
-#endif
+  _exit_on_fail(tc);
 }
 
 void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const char *msg,
@@ -166,9 +169,7 @@ void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const cha
   if (!cond) {
     tc->error_msg = assemble_message2(msg, cond_str, srcfile, tc->fname, line);
     tc->success = 0;
-#ifndef AMIGA
-    longjmp(tc->env, 0);
-#endif
+    _exit_on_fail(tc);
   }
 }
 
@@ -176,17 +177,31 @@ void _chibi_assert_eq_int(chibi_testcase *tc, int expected, int value,
                           const char *srcfile, int line)
 {
   if (value != expected) {
-    char *fmt = "%s:%d - %s() - expected:<%d> but was<%d>";
+    char *fmt = "%s:%d - %s() - expected:<%d> but was:<%d>";
     char *msgbuffer = malloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
                              + MAX_DIGITS_INT * 3 + 10);    
     sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
     tc->error_msg = msgbuffer;
     tc->success = 0;
-#ifndef AMIGA
-    longjmp(tc->env, 0);
-#endif
+    _exit_on_fail(tc);
   }
 }
+
+void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char *value,
+                           const char *srcfile, int line)
+{
+  if (strcmp(value, expected)) {
+    char *fmt = "%s:%d - %s() - expected:<%s> but was:<%s>";
+    char *msgbuffer = malloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
+                             + strlen(expected) + strlen(value)
+                             + MAX_DIGITS_INT + 10);    
+    sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
+    tc->error_msg = msgbuffer;
+    tc->success = 0;
+    _exit_on_fail(tc);
+  }
+}
+
 
 /**********************************************************************
  *
