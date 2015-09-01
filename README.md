@@ -1,24 +1,22 @@
-# ChibiTest - A C Unit testing framework
+# ChibiTest - A lightweight C Unit testing framework
 
-## Description and Philosophy
+## Description
 
 ChibiTest is a C unit testing framework that aims to be simple
-to use, portable and without dependencies apart from the C standard
-library for its core functionality (3rd party depdencies will
-be required for optional features like use within Continuous Integration
-systems, e.g. XML/JSON output).
-
-While developed on a GNU/Linux system, the minimum system requirement is
-an AmigaOS 1.x system with 512 KB RAM (using VBCC), and it should run on
-any modern computer system with a standards compliant C compiler.
-
-The way the system is integrated in a project is inspired by CuTest -
-simply put a header and C source code file into your project.
+to use, flexible, portable and without dependencies apart from the C standard
+library for its core functionality.
 
 ## Features
 
   * small, simple, easy integration
   * supports TAP protocol etc. for automake
+  * supports setup() and teardown()
+
+## System Requirements
+
+While primary developed on a GNU/Linux system, the minimum system requirement is
+an AmigaOS 1.x system with 512 KB RAM (using VBCC), and it should run on
+any modern computer system with a standards compliant C compiler.
 
 ## Usage
 
@@ -48,13 +46,12 @@ int main(int argc, char **argv)
 
 ## History and Motivation
 
-After researching and evaluating a couple of C unit testing frameworks
-for a while, I decided to write my own, mostly because I wanted
+I decided to write my own unit test framework, mostly because I wanted
 to have something that doesn't depend on any other libraries and is
-simple and small.
+simple and small, yet flexible enough to be used in a variety of project
+setups.
 
-Since a lot of my C development happens on an AmigaOS compatible system,
-a unit testing framework that runs equally well on a classic Motorola 68k
-system as on an x64, ARM or PPC GNU/Linux system.
+Since a lot of my C development is also targetting AmigaOS compatible systems,
+I wanted to ensure that the framework will enable programmers to do
+test-first C development on a classic Amiga if they so wish.
 
-In addition there is some room for experimentation.

@@ -11,9 +11,12 @@ typedef struct _chibi_testcase {
 } chibi_testcase;
 
 typedef void (*chibi_testfunc)(chibi_testcase *);
+typedef void (*chibi_fixfunc)(void *);
 
 typedef struct _chibi_suite {
   chibi_testcase *head;
+  chibi_fixfunc setup, teardown;
+  void *userdata;
 } chibi_suite;
 
 typedef struct _chibi_summary_data {
@@ -22,12 +25,13 @@ typedef struct _chibi_summary_data {
   int num_failures;
 } chibi_summary_data;
 
-
 /* SUITE MANAGEMENT */
 extern chibi_suite *chibi_suite_new();
+extern chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup, chibi_fixfunc teardown, void *userdata);
 extern void chibi_suite_delete(chibi_suite *suite);
-extern void _chibi_suite_run(chibi_suite *suite, int verbose);
+extern void chibi_suite_run(chibi_suite *suite);
 extern void chibi_suite_run_tap(chibi_suite *suite);
+
 extern void chibi_suite_summary(chibi_suite *suite);
 extern void chibi_suite_summary_data(chibi_suite *suite, chibi_summary_data *summary);
 extern void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *fname);
@@ -40,8 +44,6 @@ extern void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, co
                           const char *srcfile, int line);
 
 /* MACROS */
-#define chibi_suite_run(suite) (_chibi_suite_run(suite, 1))
-#define chibi_suite_run_silently(suite) (_chibi_suite_run(suite, 0))
 #define chibi_suite_add_test(suite, testfun) (_chibi_suite_add_test(suite, testfun, #testfun))
 #define CHIBI_TEST(funname) void funname(chibi_testcase *_tc)
 

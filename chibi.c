@@ -4,11 +4,21 @@
 
 #include "chibi.h"
 
-chibi_suite *chibi_suite_new()
+extern chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
+                                            chibi_fixfunc teardown,
+                                            void *userdata)
 {
   chibi_suite *result = malloc(sizeof(chibi_suite));
   result->head = NULL;
+  result->setup = setup;
+  result->teardown = teardown;
+  result->userdata = userdata;
   return result;
+}
+
+chibi_suite *chibi_suite_new()
+{
+  return chibi_suite_new_fixture(NULL, NULL, NULL);
 }
 
 void chibi_suite_delete(chibi_suite *suite)
@@ -42,41 +52,6 @@ void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *f
     tc->next = newtc;
   }
 }
-
-void _chibi_suite_run(chibi_suite *suite, int verbose)
-{
-  chibi_testcase *testcase = suite->head;
-  while (testcase) {
-    testcase->fun(testcase);
-    if (verbose) {
-      if (testcase->success) fprintf(stderr, ".");
-      else fprintf(stderr, "F");
-    }
-    testcase = testcase->next;
-  }
-  if (verbose) fprintf(stderr, "\n");
-}
-
-void chibi_suite_run_tap(chibi_suite *suite)
-{
-  chibi_testcase *testcase = suite->head;
-  int count = 0;
-  while (testcase) {
-    count++;
-    testcase = testcase->next;
-  }
-  testcase = suite->head;
-  fprintf(stdout, "1..%d\n", count);
-  count = 1;
-  while (testcase) {
-    testcase->fun(testcase);
-    if (testcase->success) fprintf(stdout, "ok %d - %s\n", count, testcase->fname);
-    else fprintf(stdout, "not ok %d - %s\n", count, testcase->fname);
-    testcase = testcase->next;
-    count++;
-  }
-}
-
 
 void chibi_suite_summary(chibi_suite *suite)
 {
@@ -130,18 +105,20 @@ void chibi_suite_summary_data(chibi_suite *suite, chibi_summary_data *summary)
   }
 }
 
-
 /*
  *  Reused by all assertions to generate a standard format error message.
  */
-char *assemble_message(const char *msg, const char *srcfile, const char *funname, int line)
+static char *assemble_message(const char *msg, const char *srcfile,
+                              const char *funname, int line)
 {
   char *msgbuffer = malloc(strlen(msg) + strlen(srcfile) + strlen(funname) + 12 + 8);
   sprintf(msgbuffer, "%s:%d - %s() - %s", srcfile, line, funname, msg);
   return msgbuffer;
 }
 
-char *assemble_message2(const char *msg1, const char *msg2, const char *srcfile, const char *funname, int line)
+static char *assemble_message2(const char *msg1, const char *msg2,
+                               const char *srcfile, const char *funname,
+                               int line)
 {
   char *msgbuffer = malloc(strlen(msg1) + strlen(msg2) + strlen(srcfile) + strlen(funname) + 12 + 10);
   sprintf(msgbuffer, "%s:%d - %s() - %s %s", srcfile, line, funname, msg1, msg2);
@@ -149,7 +126,8 @@ char *assemble_message2(const char *msg1, const char *msg2, const char *srcfile,
 }
 
 
-void _chibi_assert_not_null(chibi_testcase *tc, void *ptr, const char *msg, const char *srcfile, int line)
+void _chibi_assert_not_null(chibi_testcase *tc, void *ptr, const char *msg, const char *srcfile,
+                            int line)
 {
   if (ptr == NULL) {
     tc->error_msg = assemble_message(msg, srcfile, tc->fname, line);
@@ -163,10 +141,96 @@ void _chibi_fail(chibi_testcase *tc, const char *msg, const char *srcfile, int l
   tc->success = 0;
 }
 
-void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const char *msg, const char *srcfile, int line)
+void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const char *msg,
+                   const char *srcfile, int line)
 {
   if (!cond) {
     tc->error_msg = assemble_message2(msg, cond_str, srcfile, tc->fname, line);
     tc->success = 0;
   }
 }
+
+/**********************************************************************
+ *
+ * TEST RUNNERS
+ *
+ **********************************************************************/
+
+/*
+ * Generic runner. Supports fixtures and report function customization.
+ * If the suite was defined with setup and/or teardown functions, those
+ * are run on the optional userdata object.
+ * The report_num_tests(int), report_success(int, chibi_testcase *) and
+ * report_fail(int, chibi_testcase *) functions are used to support
+ * different output protocols (e.g. for reporting the success/failure of
+ * tests while they are run).
+ */
+static void _chibi_suite_run(chibi_suite *suite, int verbose, void (*report_num_tests)(int),
+                             void (*report_success)(int, chibi_testcase *),
+                             void (*report_fail)(int, chibi_testcase *))
+{
+  if (suite) {
+    chibi_testcase *testcase = suite->head;
+    int num_tests = 0, i = 0;
+
+    if (suite->setup) suite->setup(suite->userdata);
+
+    /* count the tests */
+    while (testcase) {
+      num_tests++;
+      testcase = testcase->next;
+    }
+    report_num_tests(num_tests);
+
+    /* rewind and run */
+    testcase = suite->head;    
+    while (testcase) {
+      testcase->fun(testcase);
+      if (verbose) {
+        if (testcase->success) report_success(i, testcase);
+        else report_fail(i, testcase);
+      }
+      testcase = testcase->next;
+      i++;
+    }
+    if (verbose) fprintf(stderr, "\n");
+    if (suite->teardown) suite->teardown(suite->userdata);
+  }
+}
+
+/*
+ * Standard Runner
+ */
+static void report_num_tests_std(int num_tests) { }
+static void report_success_std(int testnum, chibi_testcase *testcase) { fprintf(stderr, "."); }
+static void report_fail_std(int testnum, chibi_testcase *testcase) { fprintf(stderr, "F"); }
+
+void chibi_suite_run(chibi_suite *suite)
+{
+  _chibi_suite_run(suite, 1, report_num_tests_std, report_success_std, report_fail_std);
+}
+
+void chibi_suite_run_silently(chibi_suite *suite)
+{
+  _chibi_suite_run(suite, 0, report_num_tests_std, report_success_std, report_fail_std);
+}
+
+
+/*
+ * TAP Runner
+ */
+static void report_num_tests_tap(int num_tests) { fprintf(stdout, "1..%d\n", num_tests); }
+static void report_success_tap(int testnum, chibi_testcase *testcase)
+{
+  fprintf(stdout, "ok %d - %s\n", testnum + 1, testcase->fname);
+}
+static void report_fail_tap(int testnum, chibi_testcase *testcase)
+{
+  fprintf(stdout, "not ok %d - %s\n", testnum + 1, testcase->fname);
+}
+
+void chibi_suite_run_tap(chibi_suite *suite)
+{
+  _chibi_suite_run(suite, 1, report_num_tests_tap, report_success_tap, report_fail_tap);  
+}
+
