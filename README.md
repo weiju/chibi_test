@@ -9,6 +9,7 @@ library for its core functionality.
 ## Features
 
   * small, simple, easy integration
+  * no global state
   * supports TAP protocol etc. for automake
   * supports setup() and teardown()
 
