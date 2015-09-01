@@ -70,7 +70,7 @@ void chibi_suite_summary(chibi_suite *suite)
     tc = tc->next;
   }
 
-  fprintf(stderr, "\nSummary\n");
+  fprintf(stderr, "\n\nSummary\n");
   fprintf(stderr, "-------\n");
 
   /* Second pass: messages */
@@ -219,7 +219,7 @@ void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char 
  * different output protocols (e.g. for reporting the success/failure of
  * tests while they are run).
  */
-static void _chibi_suite_run(chibi_suite *suite, int verbose, void (*report_num_tests)(int),
+static void _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
                              void (*report_success)(int, chibi_testcase *),
                              void (*report_fail)(int, chibi_testcase *))
 {
@@ -243,17 +243,14 @@ static void _chibi_suite_run(chibi_suite *suite, int verbose, void (*report_num_
       if (!setjmp(testcase->env)) {
 #endif
         testcase->fun(testcase);
-        if (verbose) {
-          if (testcase->success) report_success(i, testcase);
-          else report_fail(i, testcase);
-        }
 #ifndef AMIGA
       }
 #endif
+      if (testcase->success) report_success(i, testcase);
+      else report_fail(i, testcase);
       testcase = testcase->next;
       i++;
     }
-    if (verbose) fprintf(stderr, "\n");
     if (suite->teardown) suite->teardown(suite->userdata);
   }
 }
@@ -261,18 +258,20 @@ static void _chibi_suite_run(chibi_suite *suite, int verbose, void (*report_num_
 /*
  * Standard Runner
  */
-static void report_num_tests_std(int num_tests) { }
+static void report_num_tests_silent(int num_tests) { }
+static void report_success_silent(int testnum, chibi_testcase *testcase) { }
+static void report_fail_silent(int testnum, chibi_testcase *testcase) { }
 static void report_success_std(int testnum, chibi_testcase *testcase) { fprintf(stderr, "."); }
 static void report_fail_std(int testnum, chibi_testcase *testcase) { fprintf(stderr, "F"); }
 
 void chibi_suite_run(chibi_suite *suite)
 {
-  _chibi_suite_run(suite, 1, report_num_tests_std, report_success_std, report_fail_std);
+  _chibi_suite_run(suite, report_num_tests_silent, report_success_std, report_fail_std);
 }
 
 void chibi_suite_run_silently(chibi_suite *suite)
 {
-  _chibi_suite_run(suite, 0, report_num_tests_std, report_success_std, report_fail_std);
+  _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent);
 }
 
 /*
@@ -290,5 +289,5 @@ static void report_fail_tap(int testnum, chibi_testcase *testcase)
 
 void chibi_suite_run_tap(chibi_suite *suite)
 {
-  _chibi_suite_run(suite, 1, report_num_tests_tap, report_success_tap, report_fail_tap);  
+  _chibi_suite_run(suite, report_num_tests_tap, report_success_tap, report_fail_tap);  
 }
