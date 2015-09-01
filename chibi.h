@@ -1,6 +1,7 @@
 #pragma once
 #ifndef __CHIBI_H__
 #define __CHIBI_H__
+#include <setjmp.h>
 
 typedef struct _chibi_testcase {
   void (*fun)(struct _chibi_testcase *);
@@ -8,6 +9,7 @@ typedef struct _chibi_testcase {
   struct _chibi_testcase *next;
   int success;
   char *error_msg;
+  jmp_buf env;
 } chibi_testcase;
 
 typedef void (*chibi_testfunc)(chibi_testcase *);

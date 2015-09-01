@@ -27,6 +27,7 @@ CHIBI_TEST(TestRunNothing)
 CHIBI_TEST(DummyFail) {
   chibi_fail("just fail");
 }
+CHIBI_TEST(DummySuccess) { }
 
 CHIBI_TEST(TestFail)
 {
@@ -48,13 +49,14 @@ void teardown1(struct FixtureData *data) { data->teardownCalled = 1; }
 
 CHIBI_TEST(TestFixture)
 {
+  chibi_suite *suite;
   struct FixtureData data;
   data.setupCalled = 0;
   data.teardownCalled = 0;
 
-  chibi_suite *suite = chibi_suite_new_fixture((chibi_fixfunc) setup1, (chibi_fixfunc) teardown1,
-                                               &data);
-  chibi_suite_add_test(suite, DummyFail);
+  suite = chibi_suite_new_fixture((chibi_fixfunc) setup1, (chibi_fixfunc) teardown1,
+                                  &data);
+  chibi_suite_add_test(suite, DummySuccess);
   chibi_suite_run_silently(suite);
   chibi_assert(data.setupCalled);
   chibi_assert(data.teardownCalled);
@@ -86,6 +88,7 @@ int main(int argc, char **argv)
   chibi_suite_add_test(suite, TestFail);
   chibi_suite_add_test(suite, TestFixture);
   chibi_suite_add_test(suite, Test_assert_eq_int);
+
   chibi_suite_run(suite);
   chibi_suite_summary(suite);
   chibi_suite_delete(suite);

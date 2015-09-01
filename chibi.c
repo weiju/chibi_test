@@ -6,9 +6,9 @@
 
 #define MAX_DIGITS_INT 10
 
-extern chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
-                                            chibi_fixfunc teardown,
-                                            void *userdata)
+chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
+                                     chibi_fixfunc teardown,
+                                     void *userdata)
 {
   chibi_suite *result = malloc(sizeof(chibi_suite));
   result->head = NULL;
@@ -133,6 +133,10 @@ static char *assemble_message2(const char *msg1, const char *msg2,
  *
  * ASSERTIONS
  *
+ * TODO: test exit after first fail: make a test case with 2 assertions and ensure
+ * that the second is not executed when the first fails
+ * Note: setjmp()/longjmp() seem to be broken on Amiga/VBCC
+ *
  **********************************************************************/
 
 void _chibi_assert_not_null(chibi_testcase *tc, void *ptr, const char *msg, const char *srcfile,
@@ -141,6 +145,9 @@ void _chibi_assert_not_null(chibi_testcase *tc, void *ptr, const char *msg, cons
   if (ptr == NULL) {
     tc->error_msg = assemble_message(msg, srcfile, tc->fname, line);
     tc->success = 0;
+#ifndef AMIGA
+    longjmp(tc->env, 0);
+#endif
   }
 }
 
@@ -148,6 +155,9 @@ void _chibi_fail(chibi_testcase *tc, const char *msg, const char *srcfile, int l
 {
   tc->error_msg = assemble_message(msg, srcfile, tc->fname, line);
   tc->success = 0;
+#ifndef AMIGA
+  longjmp(tc->env, 0);
+#endif
 }
 
 void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const char *msg,
@@ -156,6 +166,9 @@ void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const cha
   if (!cond) {
     tc->error_msg = assemble_message2(msg, cond_str, srcfile, tc->fname, line);
     tc->success = 0;
+#ifndef AMIGA
+    longjmp(tc->env, 0);
+#endif
   }
 }
 
@@ -169,6 +182,9 @@ void _chibi_assert_eq_int(chibi_testcase *tc, int expected, int value,
     sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
     tc->error_msg = msgbuffer;
     tc->success = 0;
+#ifndef AMIGA
+    longjmp(tc->env, 0);
+#endif
   }
 }
 
@@ -207,11 +223,17 @@ static void _chibi_suite_run(chibi_suite *suite, int verbose, void (*report_num_
     /* rewind and run */
     testcase = suite->head;
     while (testcase) {
-      testcase->fun(testcase);
-      if (verbose) {
-        if (testcase->success) report_success(i, testcase);
-        else report_fail(i, testcase);
+#ifndef AMIGA
+      if (!setjmp(testcase->env)) {
+#endif
+        testcase->fun(testcase);
+        if (verbose) {
+          if (testcase->success) report_success(i, testcase);
+          else report_fail(i, testcase);
+        }
+#ifndef AMIGA
       }
+#endif
       testcase = testcase->next;
       i++;
     }
@@ -237,7 +259,6 @@ void chibi_suite_run_silently(chibi_suite *suite)
   _chibi_suite_run(suite, 0, report_num_tests_std, report_success_std, report_fail_std);
 }
 
-
 /*
  * TAP Runner
  */
@@ -255,4 +276,3 @@ void chibi_suite_run_tap(chibi_suite *suite)
 {
   _chibi_suite_run(suite, 1, report_num_tests_tap, report_success_tap, report_fail_tap);  
 }
-

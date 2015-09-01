@@ -1,6 +1,6 @@
 ifdef AMIGA
 CC=vc +aos68k
-CFLAGS=
+CFLAGS=-DAMIGA
 else
 CC=gcc
 CFLAGS=
