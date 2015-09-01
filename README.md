@@ -15,6 +15,11 @@ any modern computer system with a standards compliant C compiler.
 The way the system is integrated in a project is inspired by CuTest -
 simply put a header and C source code file into your project.
 
+## Features
+
+  * small, simple, easy integration
+  * supports TAP protocol etc. for automake
+
 ## Usage
 
 Copy chibi.h and chibi.c to your project source and use as part of
