@@ -4,6 +4,8 @@
 
 #include "chibi.h"
 
+#define MAX_DIGITS_INT 10
+
 extern chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
                                             chibi_fixfunc teardown,
                                             void *userdata)
@@ -106,12 +108,12 @@ void chibi_suite_summary_data(chibi_suite *suite, chibi_summary_data *summary)
 }
 
 /*
- *  Reused by all assertions to generate a standard format error message.
+ *  Reused by assertions to generate a standard format error message.
  */
 static char *assemble_message(const char *msg, const char *srcfile,
                               const char *funname, int line)
 {
-  char *msgbuffer = malloc(strlen(msg) + strlen(srcfile) + strlen(funname) + 12 + 8);
+  char *msgbuffer = malloc(strlen(msg) + strlen(srcfile) + strlen(funname) + MAX_DIGITS_INT + 8);
   sprintf(msgbuffer, "%s:%d - %s() - %s", srcfile, line, funname, msg);
   return msgbuffer;
 }
@@ -120,11 +122,18 @@ static char *assemble_message2(const char *msg1, const char *msg2,
                                const char *srcfile, const char *funname,
                                int line)
 {
-  char *msgbuffer = malloc(strlen(msg1) + strlen(msg2) + strlen(srcfile) + strlen(funname) + 12 + 10);
+  char *msgbuffer = malloc(strlen(msg1) + strlen(msg2) + strlen(srcfile) + strlen(funname)
+                           + MAX_DIGITS_INT + 10);
   sprintf(msgbuffer, "%s:%d - %s() - %s %s", srcfile, line, funname, msg1, msg2);
   return msgbuffer;
 }
 
+
+/**********************************************************************
+ *
+ * ASSERTIONS
+ *
+ **********************************************************************/
 
 void _chibi_assert_not_null(chibi_testcase *tc, void *ptr, const char *msg, const char *srcfile,
                             int line)
@@ -146,6 +155,19 @@ void _chibi_assert(chibi_testcase *tc, int cond, const char *cond_str, const cha
 {
   if (!cond) {
     tc->error_msg = assemble_message2(msg, cond_str, srcfile, tc->fname, line);
+    tc->success = 0;
+  }
+}
+
+void _chibi_assert_eq_int(chibi_testcase *tc, int expected, int value,
+                          const char *srcfile, int line)
+{
+  if (value != expected) {
+    char *fmt = "%s:%d - %s() - expected:<%d> but was<%d>";
+    char *msgbuffer = malloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
+                             + MAX_DIGITS_INT * 3 + 10);    
+    sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
+    tc->error_msg = msgbuffer;
     tc->success = 0;
   }
 }
@@ -183,7 +205,7 @@ static void _chibi_suite_run(chibi_suite *suite, int verbose, void (*report_num_
     report_num_tests(num_tests);
 
     /* rewind and run */
-    testcase = suite->head;    
+    testcase = suite->head;
     while (testcase) {
       testcase->fun(testcase);
       if (verbose) {
