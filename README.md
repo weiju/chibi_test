@@ -20,6 +20,27 @@ simply put a header and C source code file into your project.
 Copy chibi.h and chibi.c to your project source and use as part of
 your project.
 
+### Example
+
+```
+#include "chibi.h"
+
+CHIBI_TEST(MyTest)
+{
+  chibi_assert(1 == 1);
+}
+
+int main(int argc, char **argv)
+{
+  chibi_suite *suite = chibi_suite_new();
+  chibi_suite_add_test(suite, MyTest);
+  chibi_suite_run(suite);
+  chibi_suite_summary(suite);
+  chibi_suite_delete(suite);
+  return 1;
+}
+```
+
 ## History and Motivation
 
 After researching and evaluating a couple of C unit testing frameworks
