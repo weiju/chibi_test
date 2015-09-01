@@ -9,6 +9,7 @@ typedef struct _chibi_testcase {
   struct _chibi_testcase *next;
   int success;
   char *error_msg;
+  void *userdata;
   jmp_buf env;
 } chibi_testcase;
 
@@ -59,5 +60,7 @@ extern void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, cons
 #define chibi_assert_msg(cond, msg) (_chibi_assert(_tc, cond, "", msg, __FILE__, __LINE__))
 #define chibi_assert_eq_int(expected, value) (_chibi_assert_eq_int(_tc, expected, value, __FILE__, __LINE__))
 #define chibi_assert_eq_cstr(expected, value) (_chibi_assert_eq_cstr(_tc, expected, value, __FILE__, __LINE__))
+
+#define TC_USERDATA (_tc->userdata)
 
 #endif /* __CHIBI_H__ */

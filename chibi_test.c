@@ -47,6 +47,11 @@ struct FixtureData {
 void setup1(struct FixtureData *data) { data->setupCalled = 1; }
 void teardown1(struct FixtureData *data) { data->teardownCalled = 1; }
 
+CHIBI_TEST(DependsOnSetup)
+{
+  chibi_assert(((struct FixtureData *)TC_USERDATA)->setupCalled);
+}
+
 CHIBI_TEST(TestFixture)
 {
   chibi_suite *suite;
@@ -56,7 +61,7 @@ CHIBI_TEST(TestFixture)
 
   suite = chibi_suite_new_fixture((chibi_fixfunc) setup1, (chibi_fixfunc) teardown1,
                                   &data);
-  chibi_suite_add_test(suite, DummySuccess);
+  chibi_suite_add_test(suite, DependsOnSetup);
   chibi_suite_run_silently(suite);
   chibi_assert(data.setupCalled);
   chibi_assert(data.teardownCalled);

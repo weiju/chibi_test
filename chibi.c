@@ -46,6 +46,7 @@ void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *f
   newtc->next = NULL;
   newtc->success = 1;
   newtc->error_msg = NULL;
+  newtc->userdata = suite->userdata;
 
   if (!suite->head) suite->head = newtc;
   else {
