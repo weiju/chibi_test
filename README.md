@@ -22,7 +22,7 @@ any modern computer system with a standards compliant C compiler.
 ## Usage
 
 Copy chibi.h and chibi.c to your project source and use as part of
-your project.
+your project. For more information, consult the project [wiki](https://github.com/weiju/chibi_test/wiki).
 
 ### Example
 
