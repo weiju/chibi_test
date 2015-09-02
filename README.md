@@ -1,4 +1,4 @@
-# ChibiTest - A lightweight C Unit testing framework
+# ChibiTest - A lightweight C Unit testing framework [![Build Status](https://travis-ci.org/weiju/chibi_test.svg)](https://travis-ci.org/weiju/chibi_test)
 
 ## Description
 
@@ -10,6 +10,7 @@ library for its core functionality.
 
   * small, simple, easy integration
   * no global state
+  * tests itself
   * supports TAP protocol etc. for automake
   * supports setup() and teardown()
 
