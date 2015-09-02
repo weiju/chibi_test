@@ -11,5 +11,8 @@ all: chibi_test
 clean:
 	rm -f *.o chibi_test
 
+test: chibi_test
+	./chibi_test
+
 chibi_test: chibi_test.o chibi.o
 	$(CC) $(CFLAGS) -o $@ $^

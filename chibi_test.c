@@ -75,7 +75,6 @@ CHIBI_TEST(eq_int_fail) { chibi_assert_eq_int(2, 1); }
 CHIBI_TEST(eq_int_success) { chibi_assert_eq_int(2, 2); }
 CHIBI_TEST(Test_assert_eq_int)
 {
-  chibi_summary_data summary;
   chibi_suite *suite = chibi_suite_new();
   chibi_suite_add_test(suite, eq_int_success);
   chibi_suite_add_test(suite, eq_int_fail);
@@ -92,7 +91,6 @@ CHIBI_TEST(eq_cstr_fail) { chibi_assert_eq_cstr("hello", "bye"); }
 CHIBI_TEST(eq_cstr_success) { chibi_assert_eq_cstr("hello", "hello"); }
 CHIBI_TEST(Test_assert_eq_cstr)
 {
-  chibi_summary_data summary;
   chibi_suite *suite = chibi_suite_new();
   chibi_suite_add_test(suite, eq_cstr_success);
   chibi_suite_add_test(suite, eq_cstr_fail);
@@ -104,7 +102,9 @@ CHIBI_TEST(Test_assert_eq_cstr)
 
 int main(int argc, char **argv)
 {
+  chibi_summary_data summary;
   chibi_suite *suite = chibi_suite_new();
+
   chibi_suite_add_test(suite, TestMakeSuite);
   chibi_suite_add_test(suite, TestRunNothing);
   chibi_suite_add_test(suite, TestFail);
@@ -114,6 +114,7 @@ int main(int argc, char **argv)
 
   chibi_suite_run(suite);
   chibi_suite_summary(suite);
+  chibi_suite_summary_data(suite, &summary);
   chibi_suite_delete(suite);
-  return 1;
+  return summary.num_failures;
 }
