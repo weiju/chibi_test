@@ -22,23 +22,9 @@ CHIBI_TEST(TestRunNothing)
   chibi_suite_delete(suite);
 }
 
-
 /* This test is meant to be run from within TestFail() */
-CHIBI_TEST(DummyFail) {
-  chibi_fail("just fail");
-}
+CHIBI_TEST(DummyFail) { chibi_fail("just fail"); }
 CHIBI_TEST(DummySuccess) { }
-
-CHIBI_TEST(TestFail)
-{
-  chibi_summary_data summary;
-  chibi_suite *suite = chibi_suite_new();
-  chibi_suite_add_test(suite, DummyFail);
-  chibi_suite_run_silently(suite);
-  chibi_suite_summary_data(suite, &summary);
-  chibi_assert(summary.num_failures == 1);
-  chibi_suite_delete(suite);
-}
 
 struct FixtureData {
   int setupCalled;
@@ -65,6 +51,17 @@ CHIBI_TEST(TestFixture)
   chibi_suite_run_silently(suite);
   chibi_assert(data.setupCalled);
   chibi_assert(data.teardownCalled);
+  chibi_suite_delete(suite);
+}
+
+CHIBI_TEST(Test_fail)
+{
+  chibi_summary_data summary;
+  chibi_suite *suite = chibi_suite_new();
+  chibi_suite_add_test(suite, DummyFail);
+  chibi_suite_run_silently(suite);
+  chibi_suite_summary_data(suite, &summary);
+  chibi_assert(summary.num_failures == 1);
   chibi_suite_delete(suite);
 }
 
@@ -100,6 +97,34 @@ CHIBI_TEST(Test_assert_eq_cstr)
   chibi_suite_delete(suite);
 }
 
+CHIBI_TEST(Test_nested_suites)
+{
+  chibi_suite *toplevel, *child1, *child2;
+  struct FixtureData data1, data2;
+  data1.setupCalled = 0;
+  data1.teardownCalled = 0;
+  data2.setupCalled = 0;
+  data2.teardownCalled = 0;
+
+  toplevel = chibi_suite_new();
+  child1 = chibi_suite_new_fixture((chibi_fixfunc) setup1, (chibi_fixfunc) teardown1, &data1);
+  child2 = chibi_suite_new_fixture((chibi_fixfunc) setup1, (chibi_fixfunc) teardown1, &data2);
+  chibi_suite_add_test(child1, DependsOnSetup);
+  chibi_suite_add_test(child2, DependsOnSetup);
+
+  chibi_suite_add_suite(toplevel, child1);
+  chibi_suite_add_suite(toplevel, child2);
+
+  chibi_suite_run_silently(toplevel);
+
+  chibi_assert(data1.setupCalled);
+  chibi_assert(data1.teardownCalled);
+  chibi_assert(data2.setupCalled);
+  chibi_assert(data2.teardownCalled);
+
+  chibi_suite_delete(toplevel);
+}
+
 int main(int argc, char **argv)
 {
   chibi_summary_data summary;
@@ -107,10 +132,11 @@ int main(int argc, char **argv)
 
   chibi_suite_add_test(suite, TestMakeSuite);
   chibi_suite_add_test(suite, TestRunNothing);
-  chibi_suite_add_test(suite, TestFail);
   chibi_suite_add_test(suite, TestFixture);
+  chibi_suite_add_test(suite, Test_fail);
   chibi_suite_add_test(suite, Test_assert_eq_int);
   chibi_suite_add_test(suite, Test_assert_eq_cstr);
+  chibi_suite_add_test(suite, Test_nested_suites);
 
   chibi_suite_run(suite);
   chibi_suite_summary(suite);

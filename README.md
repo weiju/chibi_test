@@ -13,6 +13,7 @@ library for its core functionality.
   * tests itself
   * supports TAP protocol etc. for automake
   * supports setup() and teardown()
+  * nested test suites to support grouping
 
 ## System Requirements
 
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
   chibi_suite_run(suite);
   chibi_suite_summary(suite);
   chibi_suite_delete(suite);
-  return 1;
+  return 0;
 }
 ```
 

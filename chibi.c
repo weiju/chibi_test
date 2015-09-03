@@ -15,6 +15,8 @@ chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
   result->setup = setup;
   result->teardown = teardown;
   result->userdata = userdata;
+  result->first_child = NULL;
+  result->next = NULL;
   return result;
 }
 
@@ -33,7 +35,20 @@ void chibi_suite_delete(chibi_suite *suite)
       free(tc);
       tc = tmp;
     }
+    /* recursively free the children and siblings */
+    if (suite->first_child) chibi_suite_delete(suite->first_child);
+    if (suite->next) chibi_suite_delete(suite->next);
     free(suite);
+  }
+}
+
+void chibi_suite_add_suite(chibi_suite *suite, chibi_suite *toadd)
+{
+  if (!suite->first_child) suite->first_child = toadd;
+  else {
+    chibi_suite *cur = suite->first_child;
+    while (cur->next) cur = cur->next;
+    cur->next = toadd;
   }
 }
 
@@ -219,24 +234,41 @@ void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char 
  * different output protocols (e.g. for reporting the success/failure of
  * tests while they are run).
  */
-static void _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
-                             void (*report_success)(int, chibi_testcase *),
-                             void (*report_fail)(int, chibi_testcase *))
+static int _count_tests(chibi_suite *suite) {
+  chibi_testcase *testcase = suite->head;
+  int result = 0;
+  if (suite->first_child) result += _count_tests(suite->first_child);
+  if (suite->next) result += _count_tests(suite->next);
+  while (testcase) {
+    result++;
+    testcase = testcase->next;
+  }
+  return result;
+}
+
+static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
+                            void (*report_success)(int, chibi_testcase *),
+                            void (*report_fail)(int, chibi_testcase *),
+                            int tcnum, int level)
 {
   if (suite) {
-    chibi_testcase *testcase = suite->head;
-    int num_tests = 0, i = 0;
+    chibi_testcase *testcase;
+
+    if (suite->first_child) {
+      tcnum = _chibi_suite_run(suite->first_child, report_num_tests,
+                               report_success, report_fail, tcnum, level + 1);
+    }
+    if (suite->next) {
+      tcnum = _chibi_suite_run(suite->next, report_num_tests,
+                               report_success, report_fail, tcnum, level + 1);
+    }
 
     if (suite->setup) suite->setup(suite->userdata);
 
-    /* count the tests */
-    while (testcase) {
-      num_tests++;
-      testcase = testcase->next;
-    }
-    report_num_tests(num_tests);
+    /* only report the number of tests at the top level */
+    if (level == 0) report_num_tests(_count_tests(suite));
 
-    /* rewind and run */
+    /* run this level's tests */
     testcase = suite->head;
     while (testcase) {
 #ifndef AMIGA
@@ -246,13 +278,14 @@ static void _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
 #ifndef AMIGA
       }
 #endif
-      if (testcase->success) report_success(i, testcase);
-      else report_fail(i, testcase);
+      if (testcase->success) report_success(tcnum, testcase);
+      else report_fail(tcnum, testcase);
       testcase = testcase->next;
-      i++;
+      tcnum++;
     }
     if (suite->teardown) suite->teardown(suite->userdata);
   }
+  return tcnum;
 }
 
 /*
@@ -266,12 +299,12 @@ static void report_fail_std(int testnum, chibi_testcase *testcase) { fprintf(std
 
 void chibi_suite_run(chibi_suite *suite)
 {
-  _chibi_suite_run(suite, report_num_tests_silent, report_success_std, report_fail_std);
+  _chibi_suite_run(suite, report_num_tests_silent, report_success_std, report_fail_std, 0, 0);
 }
 
 void chibi_suite_run_silently(chibi_suite *suite)
 {
-  _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent);
+  _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent, 0, 0);
 }
 
 /*
@@ -289,5 +322,5 @@ static void report_fail_tap(int testnum, chibi_testcase *testcase)
 
 void chibi_suite_run_tap(chibi_suite *suite)
 {
-  _chibi_suite_run(suite, report_num_tests_tap, report_success_tap, report_fail_tap);  
+  _chibi_suite_run(suite, report_num_tests_tap, report_success_tap, report_fail_tap, 0, 0);
 }
