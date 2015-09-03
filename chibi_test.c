@@ -29,13 +29,21 @@ CHIBI_TEST(DummySuccess) { }
 struct FixtureData {
   int setupCalled;
   int teardownCalled;
+  int reset_me;
 };
-void setup1(struct FixtureData *data) { data->setupCalled = 1; }
-void teardown1(struct FixtureData *data) { data->teardownCalled = 1; }
+void setup1(struct FixtureData *data) {
+  data->setupCalled++;
+  data->reset_me++;
+}
+void teardown1(struct FixtureData *data) {
+  data->teardownCalled++;
+  data->reset_me--;
+}
 
 CHIBI_TEST(DependsOnSetup)
 {
-  chibi_assert(((struct FixtureData *)TC_USERDATA)->setupCalled);
+  struct FixtureData *data = (struct FixtureData *) TC_USERDATA;
+  chibi_assert(data->setupCalled);
 }
 
 CHIBI_TEST(TestFixture)
@@ -44,13 +52,17 @@ CHIBI_TEST(TestFixture)
   struct FixtureData data;
   data.setupCalled = 0;
   data.teardownCalled = 0;
+  data.reset_me = 0;
 
   suite = chibi_suite_new_fixture((chibi_fixfunc) setup1, (chibi_fixfunc) teardown1,
                                   &data);
+  /* add twice to check that */
+  chibi_suite_add_test(suite, DependsOnSetup);
   chibi_suite_add_test(suite, DependsOnSetup);
   chibi_suite_run_silently(suite);
-  chibi_assert(data.setupCalled);
-  chibi_assert(data.teardownCalled);
+  chibi_assert_eq_int(2, data.setupCalled);
+  chibi_assert_eq_int(2, data.teardownCalled);
+  chibi_assert_eq_int(0, data.reset_me);
   chibi_suite_delete(suite);
 }
 

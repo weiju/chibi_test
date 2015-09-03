@@ -263,8 +263,6 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
                                report_success, report_fail, tcnum, level + 1);
     }
 
-    if (suite->setup) suite->setup(suite->userdata);
-
     /* only report the number of tests at the top level */
     if (level == 0) report_num_tests(_count_tests(suite));
 
@@ -274,7 +272,9 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
 #ifndef AMIGA
       if (!setjmp(testcase->env)) {
 #endif
+        if (suite->setup) suite->setup(suite->userdata);    
         testcase->fun(testcase);
+        if (suite->teardown) suite->teardown(suite->userdata);
 #ifndef AMIGA
       }
 #endif
@@ -283,7 +283,6 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
       testcase = testcase->next;
       tcnum++;
     }
-    if (suite->teardown) suite->teardown(suite->userdata);
   }
   return tcnum;
 }
