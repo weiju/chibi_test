@@ -71,7 +71,7 @@ void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *f
   }
 }
 
-void chibi_suite_summary(chibi_suite *suite)
+void chibi_suite_print_summary(chibi_suite *suite)
 {
   int num_tests = 0, num_failures = 0, i = 1;
   chibi_testcase *tc = suite->head;
@@ -104,7 +104,7 @@ void chibi_suite_summary(chibi_suite *suite)
   fprintf(stderr, "Runs: %d Pass: %d Fail: %d\n\n", num_tests, num_tests - num_failures, num_failures);
 }
 
-void chibi_suite_summary_data(chibi_suite *suite, chibi_summary_data *summary)
+static void _chibi_suite_summary_data(chibi_suite *suite, chibi_summary_data *summary)
 {
   if (suite && summary) {
     chibi_testcase *tc = suite->head;
@@ -143,7 +143,6 @@ static char *assemble_message2(const char *msg1, const char *msg2,
   sprintf(msgbuffer, "%s:%d - %s() - %s %s", srcfile, line, funname, msg1, msg2);
   return msgbuffer;
 }
-
 
 /**********************************************************************
  *
@@ -217,7 +216,6 @@ void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char 
     _exit_on_fail(tc);
   }
 }
-
 
 /**********************************************************************
  *
@@ -296,14 +294,16 @@ static void report_fail_silent(int testnum, chibi_testcase *testcase) { }
 static void report_success_std(int testnum, chibi_testcase *testcase) { fprintf(stderr, "."); }
 static void report_fail_std(int testnum, chibi_testcase *testcase) { fprintf(stderr, "F"); }
 
-void chibi_suite_run(chibi_suite *suite)
+void chibi_suite_run(chibi_suite *suite, chibi_summary_data *summary)
 {
   _chibi_suite_run(suite, report_num_tests_silent, report_success_std, report_fail_std, 0, 0);
+  if (summary) _chibi_suite_summary_data(suite, summary);
 }
 
-void chibi_suite_run_silently(chibi_suite *suite)
+void chibi_suite_run_silently(chibi_suite *suite, chibi_summary_data *summary)
 {
   _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent, 0, 0);
+  if (summary) _chibi_suite_summary_data(suite, summary);
 }
 
 /*
@@ -319,7 +319,8 @@ static void report_fail_tap(int testnum, chibi_testcase *testcase)
   fprintf(stdout, "not ok %d - %s\n", testnum + 1, testcase->fname);
 }
 
-void chibi_suite_run_tap(chibi_suite *suite)
+void chibi_suite_run_tap(chibi_suite *suite, chibi_summary_data *summary)
 {
   _chibi_suite_run(suite, report_num_tests_tap, report_success_tap, report_fail_tap, 0, 0);
+  if (summary) _chibi_suite_summary_data(suite, summary);
 }
