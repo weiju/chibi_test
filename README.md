@@ -1,8 +1,8 @@
-# ChibiTest - A lightweight C Unit testing framework [![Build Status](https://travis-ci.org/weiju/chibi_test.svg)](https://travis-ci.org/weiju/chibi_test)
+# chibitest.c - A lightweight C Unit testing framework [![Build Status](https://travis-ci.org/weiju/chibi_test.svg)](https://travis-ci.org/weiju/chibi_test)
 
 ## Description
 
-ChibiTest is a C unit testing framework that aims to be simple
+chibitest.c is a C unit testing framework that aims to be simple
 to use, flexible, portable and without dependencies apart from the C standard
 library for its core functionality.
 
