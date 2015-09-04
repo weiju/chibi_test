@@ -149,7 +149,6 @@ int main(int argc, char **argv)
   chibi_suite_add_test(suite, Test_nested_suites);
 
   chibi_suite_run(suite, &summary);
-  chibi_suite_print_summary(suite);
 
   chibi_suite_delete(suite);
   return summary.num_failures;

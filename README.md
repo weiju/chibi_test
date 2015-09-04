@@ -41,7 +41,6 @@ int main(int argc, char **argv)
   chibi_suite *suite = chibi_suite_new();
   chibi_suite_add_test(suite, MyTest);
   chibi_suite_run(suite, NULL);
-  chibi_suite_print_summary(suite);
   chibi_suite_delete(suite);
   return 0;
 }

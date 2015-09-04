@@ -111,7 +111,7 @@ static int _print_messages(chibi_suite *suite, int testnum)
   return testnum;
 }
 
-void chibi_suite_print_summary(chibi_suite *suite)
+static void chibi_suite_print_summary(chibi_suite *suite)
 {
   chibi_summary_data summary;
   _chibi_suite_summary_data(suite, &summary, 0);
@@ -302,6 +302,7 @@ void chibi_suite_run(chibi_suite *suite, chibi_summary_data *summary)
 {
   _chibi_suite_run(suite, report_num_tests_silent, report_success_std, report_fail_std, 0, 0);
   if (summary) _chibi_suite_summary_data(suite, summary, 0);
+  chibi_suite_print_summary(suite);
 }
 
 void chibi_suite_run_silently(chibi_suite *suite, chibi_summary_data *summary)
