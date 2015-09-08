@@ -3,6 +3,8 @@
 #define __CHIBI_H__
 #include <setjmp.h>
 
+#define GIT_SHA "$Id$"
+
 /* DATA STRUCTURES */
 typedef struct _chibi_testcase {
   void (*fun)(struct _chibi_testcase *);
