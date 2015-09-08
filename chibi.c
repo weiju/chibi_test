@@ -116,8 +116,7 @@ static void chibi_suite_print_summary(chibi_suite *suite)
   chibi_summary_data summary;
   _chibi_suite_summary_data(suite, &summary, 0);
 
-  fprintf(stderr, "\n\nSummary\n");
-  fprintf(stderr, "-------\n");
+  fprintf(stderr, "\n\nSummary (chibitest %s)\n\n", CHIBI_TEST_GIT_SHA);
   if (summary.num_failures > 0) {
     fprintf(stderr, "# of failures: %d\n\n", summary.num_failures);
     _print_messages(suite, 0);
