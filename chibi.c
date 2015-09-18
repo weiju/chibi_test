@@ -10,7 +10,7 @@ chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
                                      chibi_fixfunc teardown,
                                      void *userdata)
 {
-  chibi_suite *result = malloc(sizeof(chibi_suite));
+  chibi_suite *result = calloc(1, sizeof(chibi_suite));
   result->head = NULL;
   result->setup = setup;
   result->teardown = teardown;
@@ -55,7 +55,7 @@ void chibi_suite_add_suite(chibi_suite *suite, chibi_suite *toadd)
 void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *fname)
 {
   struct _chibi_testcase *tc, *newtc;
-  newtc = malloc(sizeof(struct _chibi_testcase));
+  newtc = calloc(1, sizeof(struct _chibi_testcase));
   newtc->fun = fun;
   newtc->fname = fname;
   newtc->next = NULL;
@@ -132,7 +132,8 @@ static void chibi_suite_print_summary(chibi_suite *suite)
 static char *assemble_message(const char *msg, const char *srcfile,
                               const char *funname, int line)
 {
-  char *msgbuffer = malloc(strlen(msg) + strlen(srcfile) + strlen(funname) + MAX_DIGITS_INT + 8);
+  char *msgbuffer = calloc(strlen(msg) + strlen(srcfile) + strlen(funname) + MAX_DIGITS_INT + 8,
+                           sizeof(char));
   sprintf(msgbuffer, "%s:%d - %s() - %s", srcfile, line, funname, msg);
   return msgbuffer;
 }
@@ -141,8 +142,8 @@ static char *assemble_message2(const char *msg1, const char *msg2,
                                const char *srcfile, const char *funname,
                                int line)
 {
-  char *msgbuffer = malloc(strlen(msg1) + strlen(msg2) + strlen(srcfile) + strlen(funname)
-                           + MAX_DIGITS_INT + 10);
+  char *msgbuffer = calloc(strlen(msg1) + strlen(msg2) + strlen(srcfile) + strlen(funname)
+                           + MAX_DIGITS_INT + 10, sizeof(char));
   sprintf(msgbuffer, "%s:%d - %s() - %s %s", srcfile, line, funname, msg1, msg2);
   return msgbuffer;
 }
@@ -196,8 +197,8 @@ void _chibi_assert_eq_int(chibi_testcase *tc, int expected, int value,
 {
   if (value != expected) {
     char *fmt = "%s:%d - %s() - expected:<%d> but was:<%d>";
-    char *msgbuffer = malloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
-                             + MAX_DIGITS_INT * 3 + 10);    
+    char *msgbuffer = calloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
+                             + MAX_DIGITS_INT * 3 + 10, sizeof(char));
     sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
     tc->error_msg = msgbuffer;
     tc->success = 0;
@@ -210,9 +211,9 @@ void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char 
 {
   if (strcmp(value, expected)) {
     char *fmt = "%s:%d - %s() - expected:<%s> but was:<%s>";
-    char *msgbuffer = malloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
+    char *msgbuffer = calloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
                              + strlen(expected) + strlen(value)
-                             + MAX_DIGITS_INT + 10);    
+                             + MAX_DIGITS_INT + 10, sizeof(char));
     sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
     tc->error_msg = msgbuffer;
     tc->success = 0;
