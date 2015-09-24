@@ -7,34 +7,34 @@
 
 /* DATA STRUCTURES */
 typedef struct _chibi_testcase {
-  void (*fun)(struct _chibi_testcase *);
-  const char *fname;
-  struct _chibi_testcase *next;
-  int success;
-  char *error_msg;
-  void *userdata;
-  jmp_buf env;
+    void (*fun)(struct _chibi_testcase *);
+    const char *fname;
+    struct _chibi_testcase *next;
+    int success;
+    char *error_msg;
+    void *userdata;
+    jmp_buf env;
 } chibi_testcase;
 
 typedef void (*chibi_testfunc)(chibi_testcase *);
 typedef void (*chibi_fixfunc)(void *);
 
 typedef struct _chibi_suite {
-  chibi_testcase *head;
-  chibi_fixfunc setup, teardown;
-  void *userdata;
+    chibi_testcase *head;
+    chibi_fixfunc setup, teardown;
+    void *userdata;
 
-  /* defines the head of the child list */
-  struct _chibi_suite *first_child;
+    /* defines the head of the child list */
+    struct _chibi_suite *first_child;
 
-  /* next member in the child list */
-  struct _chibi_suite *next;
+    /* next member in the child list */
+    struct _chibi_suite *next;
 } chibi_suite;
 
 typedef struct _chibi_summary_data {
-  int num_runs;
-  int num_pass;
-  int num_failures;
+    int num_runs;
+    int num_pass;
+    int num_failures;
 } chibi_summary_data;
 
 /* SUITE MANAGEMENT */
