@@ -199,7 +199,7 @@ void _chibi_assert_eq_int(chibi_testcase *tc, int expected, int value,
         char *fmt = "%s:%d - %s() - expected:<%d> but was:<%d>";
         char *msgbuffer = calloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
                                  + MAX_DIGITS_INT * 3 + 10, sizeof(char));
-        sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
+        sprintf(msgbuffer, fmt, srcfile, line, tc->fname, expected, value);
         tc->error_msg = msgbuffer;
         tc->success = 0;
         _exit_on_fail(tc);
@@ -219,7 +219,7 @@ void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char 
         msgbuffer = calloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
                            + strlen(expected) + strlen(value)
                            + MAX_DIGITS_INT + 10, sizeof(char));
-        sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
+        sprintf(msgbuffer, fmt, srcfile, line, tc->fname, expected, value);
         tc->error_msg = msgbuffer;
         tc->success = 0;
         _exit_on_fail(tc);
