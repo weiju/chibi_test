@@ -96,6 +96,9 @@ CHIBI_TEST(Test_assert_eq_int)
  */
 CHIBI_TEST(eq_cstr_fail) { chibi_assert_eq_cstr("hello", "bye"); }
 CHIBI_TEST(eq_cstr_success) { chibi_assert_eq_cstr("hello", "hello"); }
+CHIBI_TEST(eq_cstr_null_fail1) { chibi_assert_eq_cstr(NULL, "hello"); }
+CHIBI_TEST(eq_cstr_null_fail2) { chibi_assert_eq_cstr("hello", NULL); }
+CHIBI_TEST(eq_cstr_null_success) { chibi_assert_eq_cstr(NULL, NULL); }
 CHIBI_TEST(Test_assert_eq_cstr)
 {
     chibi_suite *suite = chibi_suite_new();
@@ -104,6 +107,33 @@ CHIBI_TEST(Test_assert_eq_cstr)
     chibi_suite_run_silently(suite, NULL);
     chibi_assert(suite->head->success);
     chibi_assert(!suite->head->next->success);
+    chibi_suite_delete(suite);
+}
+
+CHIBI_TEST(Test_assert_eq_cstr_null_fail1)
+{
+    chibi_suite *suite = chibi_suite_new();
+    chibi_suite_add_test(suite, eq_cstr_null_fail1);
+    chibi_suite_run_silently(suite, NULL);
+    chibi_assert(!suite->head->success);
+    chibi_suite_delete(suite);
+}
+
+CHIBI_TEST(Test_assert_eq_cstr_null_fail2)
+{
+    chibi_suite *suite = chibi_suite_new();
+    chibi_suite_add_test(suite, eq_cstr_null_fail2);
+    chibi_suite_run_silently(suite, NULL);
+    chibi_assert(!suite->head->success);
+    chibi_suite_delete(suite);
+}
+
+CHIBI_TEST(Test_assert_eq_cstr_null_success)
+{
+    chibi_suite *suite = chibi_suite_new();
+    chibi_suite_add_test(suite, eq_cstr_null_success);
+    chibi_suite_run_silently(suite, NULL);
+    chibi_assert(suite->head->success);
     chibi_suite_delete(suite);
 }
 
@@ -146,8 +176,10 @@ int main(int argc, char **argv)
     chibi_suite_add_test(suite, Test_fail);
     chibi_suite_add_test(suite, Test_assert_eq_int);
     chibi_suite_add_test(suite, Test_assert_eq_cstr);
+    chibi_suite_add_test(suite, Test_assert_eq_cstr_null_fail1);
+    chibi_suite_add_test(suite, Test_assert_eq_cstr_null_fail2);
+    chibi_suite_add_test(suite, Test_assert_eq_cstr_null_success);
     chibi_suite_add_test(suite, Test_nested_suites);
-
     chibi_suite_run(suite, &summary);
 
     chibi_suite_delete(suite);

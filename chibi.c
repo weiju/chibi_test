@@ -209,11 +209,16 @@ void _chibi_assert_eq_int(chibi_testcase *tc, int expected, int value,
 void _chibi_assert_eq_cstr(chibi_testcase *tc, const char *expected, const char *value,
                            const char *srcfile, int line)
 {
-    if (strcmp(value, expected)) {
-        char *fmt = "%s:%d - %s() - expected:<%s> but was:<%s>";
-        char *msgbuffer = calloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
-                                 + strlen(expected) + strlen(value)
-                                 + MAX_DIGITS_INT + 10, sizeof(char));
+    if (value == expected) return;
+    if (!value || !expected || strcmp(value, expected)) {
+        char *fmt, *msgbuffer;
+
+        if (!expected) expected = "(null)";
+        if (!value) value = "(null)";
+        fmt = "%s:%d - %s() - expected:<%s> but was:<%s>";
+        msgbuffer = calloc(strlen(fmt) + strlen(srcfile) + strlen(tc->fname)
+                           + strlen(expected) + strlen(value)
+                           + MAX_DIGITS_INT + 10, sizeof(char));
         sprintf(msgbuffer, fmt, srcfile, line, tc->fname, value, expected);
         tc->error_msg = msgbuffer;
         tc->success = 0;
