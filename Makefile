@@ -1,9 +1,9 @@
 ifdef AMIGA
 CC=vc +aos68k
-CFLAGS=-DAMIGA
+CFLAGS=-DAMIGA -c99
 else
 CC=gcc
-CFLAGS=
+CFLAGS=-std=c99 -pedantic
 endif
 
 all: chibi_test
