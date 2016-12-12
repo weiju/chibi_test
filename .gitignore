@@ -1,2 +1,4 @@
 *.o
+*.gcda
+*.gcno
 chibi_test

@@ -54,7 +54,7 @@ extern void chibi_suite_add_suite(chibi_suite *suite, chibi_suite *toadd);
 /* don't use this directly */
 extern void _chibi_suite_add_test(chibi_suite *suite, chibi_testfunc fun, const char *fname);
 
-/* 
+/*
  * ASSERTIONS
  * don't use these directly, use the macros instead, they are more convenient
  * to use.
