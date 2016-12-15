@@ -2,3 +2,4 @@
 *.gcda
 *.gcno
 chibi_test
+coverage.xml

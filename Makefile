@@ -14,9 +14,9 @@ clean:
 
 test: chibi_test
 	./chibi_test
-	# The line below only works if gcovr is installed, feel free to omit
-	gcovr -r .
 
 chibi_test: chibi_test.o chibi.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
+coverage: test
+	gcovr -r . --xml-pretty -o coverage.xml
