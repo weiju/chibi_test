@@ -334,3 +334,24 @@ void chibi_suite_run_tap(chibi_suite *suite, chibi_summary_data *summary)
     _chibi_suite_run(suite, report_num_tests_tap, report_success_tap, report_fail_tap, 0, 0);
     if (summary) _chibi_suite_summary_data(suite, summary, 0);
 }
+
+void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary)
+{
+    struct _chibi_testcase *cur = suite->head;
+    _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent, 0, 0);
+    if (summary) _chibi_suite_summary_data(suite, summary, 0);
+    puts("<?xml version=\"1.0\" ?>");
+    printf("<testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
+           0, summary->num_failures, __FILE__, summary->num_failures + summary->num_pass, 0.123);
+    while (cur != NULL) {
+        printf("  <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
+               "noclass", cur->fname, 0.001);
+        if (!cur->success) {
+            printf("    <failure type=\"%s\" message=\"%s\" />",
+                   "error", cur->error_msg);
+        }
+        puts("  </testcase>");
+        cur = cur->next;
+    }
+    puts("</testsuite>");
+}

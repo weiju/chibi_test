@@ -5,15 +5,18 @@ else
 CC=gcc
 CFLAGS=-std=c99 -pedantic -ftest-coverage -fprofile-arcs
 LDFLAGS=
+ts := $(shell /bin/date "+%Y%m%d%H%M%S")
 endif
 
 all: chibi_test
 
 clean:
-	rm -f *.o chibi_test *.gcda *.gcno
+	rm -rf *.o chibi_test *.gcda *.gcno test-reports coverage.xml
 
 test: chibi_test
-	./chibi_test
+	rm -rf test-reports
+	mkdir test-reports
+	./chibi_test xml > test-reports/chibi_test-$(ts).xml
 
 chibi_test: chibi_test.o chibi.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^

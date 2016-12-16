@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "chibi.h"
 
@@ -180,7 +181,11 @@ int main(int argc, char **argv)
     chibi_suite_add_test(suite, Test_assert_eq_cstr_null_fail2);
     chibi_suite_add_test(suite, Test_assert_eq_cstr_null_success);
     chibi_suite_add_test(suite, Test_nested_suites);
-    chibi_suite_run(suite, &summary);
+    if (argc > 1 && !strncmp("xml", argv[1], 3)) {
+      chibi_suite_run_xml(suite, &summary);
+    } else {
+      chibi_suite_run(suite, &summary);
+    }
 
     chibi_suite_delete(suite);
     return summary.num_failures;
