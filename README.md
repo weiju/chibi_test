@@ -38,7 +38,7 @@ CHIBI_TEST(MyTest)
 
 int main(int argc, char **argv)
 {
-  chibi_suite *suite = chibi_suite_new();
+  chibi_suite *suite = chibi_suite_new("MySuite");
   chibi_suite_add_test(suite, MyTest);
   chibi_suite_run(suite, NULL);
   chibi_suite_delete(suite);
