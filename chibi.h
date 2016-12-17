@@ -22,6 +22,7 @@ typedef void (*chibi_fixfunc)(void *);
 typedef struct _chibi_suite {
     chibi_testcase *head;
     chibi_fixfunc setup, teardown;
+    const char *name;
     void *userdata;
 
     /* defines the head of the child list */
@@ -38,8 +39,8 @@ typedef struct _chibi_summary_data {
 } chibi_summary_data;
 
 /* SUITE MANAGEMENT */
-extern chibi_suite *chibi_suite_new();
-extern chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup, chibi_fixfunc teardown, void *userdata);
+extern chibi_suite *chibi_suite_new(const char *name);
+extern chibi_suite *chibi_suite_new_fixture(const char *name, chibi_fixfunc setup, chibi_fixfunc teardown, void *userdata);
 extern void chibi_suite_delete(chibi_suite *suite);
 extern void chibi_suite_run(chibi_suite *suite, chibi_summary_data *summary);
 extern void chibi_suite_run_silently(chibi_suite *suite, chibi_summary_data *summary);

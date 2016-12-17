@@ -6,11 +6,13 @@
 
 #define MAX_DIGITS_INT 10
 
-chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
+chibi_suite *chibi_suite_new_fixture(const char *name,
+                                     chibi_fixfunc setup,
                                      chibi_fixfunc teardown,
                                      void *userdata)
 {
     chibi_suite *result = calloc(1, sizeof(chibi_suite));
+    result->name = name;
     result->head = NULL;
     result->setup = setup;
     result->teardown = teardown;
@@ -20,9 +22,9 @@ chibi_suite *chibi_suite_new_fixture(chibi_fixfunc setup,
     return result;
 }
 
-chibi_suite *chibi_suite_new()
+chibi_suite *chibi_suite_new(const char *name)
 {
-    return chibi_suite_new_fixture(NULL, NULL, NULL);
+    return chibi_suite_new_fixture(name, NULL, NULL, NULL);
 }
 
 void chibi_suite_delete(chibi_suite *suite)
@@ -279,7 +281,7 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
 #ifndef AMIGA
             if (!setjmp(testcase->env)) {
 #endif
-                if (suite->setup) suite->setup(suite->userdata);    
+                if (suite->setup) suite->setup(suite->userdata);
                 testcase->fun(testcase);
                 if (suite->teardown) suite->teardown(suite->userdata);
 #ifndef AMIGA
@@ -341,17 +343,21 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary)
     _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent, 0, 0);
     if (summary) _chibi_suite_summary_data(suite, summary, 0);
     puts("<?xml version=\"1.0\" ?>");
-    printf("<testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
-           0, summary->num_failures, __FILE__, summary->num_failures + summary->num_pass, 0.123);
+    int num_tests = summary->num_failures + summary->num_pass;
+    printf("<testsuites name=\"All tests\" tests=\"%d\" errors=\"%d\" failures=\"%d\">\n",
+           num_tests, 0, summary->num_failures);
+    printf("  <testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
+           0, summary->num_failures, suite->name, num_tests, 0.123);
     while (cur != NULL) {
-        printf("  <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
-               "noclass", cur->fname, 0.001);
+        printf("    <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
+               suite->name, cur->fname, 0.001);
         if (!cur->success) {
-            printf("    <failure type=\"%s\" message=\"%s\" />",
+            printf("      <failure type=\"%s\" message=\"%s\" />",
                    "error", cur->error_msg);
         }
-        puts("  </testcase>");
+        puts("    </testcase>");
         cur = cur->next;
     }
-    puts("</testsuite>");
+    puts("  </testsuite>");
+    puts("</testsuites>");
 }
