@@ -344,20 +344,17 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary)
     if (summary) _chibi_suite_summary_data(suite, summary, 0);
     puts("<?xml version=\"1.0\" ?>");
     int num_tests = summary->num_failures + summary->num_pass;
-    printf("<testsuites name=\"All tests\" tests=\"%d\" errors=\"%d\" failures=\"%d\">\n",
-           num_tests, 0, summary->num_failures);
-    printf("  <testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
+    printf("<testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
            0, summary->num_failures, suite->name, num_tests, 0.123);
     while (cur != NULL) {
-        printf("    <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
+        printf("  <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
                suite->name, cur->fname, 0.001);
         if (!cur->success) {
-            printf("      <failure type=\"%s\" message=\"%s\" />",
+            printf("    <failure type=\"%s\" message=\"%s\" />",
                    "error", cur->error_msg);
         }
-        puts("    </testcase>");
+        puts("  </testcase>");
         cur = cur->next;
     }
-    puts("  </testsuite>");
-    puts("</testsuites>");
+    puts("</testsuite>");
 }

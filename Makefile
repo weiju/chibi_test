@@ -16,7 +16,7 @@ clean:
 test: chibi_test
 	rm -rf test-reports
 	mkdir test-reports
-	./chibi_test xml > test-reports/chibi_test-$(ts).xml
+	./chibi_test xml > test-reports/TEST-chibi_test.AllTests-$(ts).xml
 
 chibi_test: chibi_test.o chibi.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
