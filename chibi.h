@@ -4,6 +4,7 @@
 #include <setjmp.h>
 
 #define CHIBI_TEST_GIT_SHA "$Id$"
+#define PATH_SEPARATOR "/"
 
 /* DATA STRUCTURES */
 typedef struct _chibi_testcase {
@@ -45,7 +46,7 @@ extern void chibi_suite_delete(chibi_suite *suite);
 extern void chibi_suite_run(chibi_suite *suite, chibi_summary_data *summary);
 extern void chibi_suite_run_silently(chibi_suite *suite, chibi_summary_data *summary);
 extern void chibi_suite_run_tap(chibi_suite *suite, chibi_summary_data *summary);
-extern void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary);
+extern void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const char *outdir);
 
 /*
  * We can nest suites. Since every suite can define a fixture, we might define

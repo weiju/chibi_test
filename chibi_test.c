@@ -169,7 +169,7 @@ CHIBI_TEST(Test_nested_suites)
 int main(int argc, char **argv)
 {
     chibi_summary_data summary;
-    chibi_suite *suite = chibi_suite_new("ChibiTestSuite");
+    chibi_suite *suite = chibi_suite_new("chibi_test.ChibiTestSuite");
 
     chibi_suite_add_test(suite, TestMakeSuite);
     chibi_suite_add_test(suite, TestRunNothing);
@@ -182,9 +182,9 @@ int main(int argc, char **argv)
     chibi_suite_add_test(suite, Test_assert_eq_cstr_null_success);
     chibi_suite_add_test(suite, Test_nested_suites);
     if (argc > 1 && !strncmp("xml", argv[1], 3)) {
-      chibi_suite_run_xml(suite, &summary);
+        chibi_suite_run_xml(suite, &summary, "test-reports");
     } else {
-      chibi_suite_run(suite, &summary);
+        chibi_suite_run(suite, &summary);
     }
 
     chibi_suite_delete(suite);

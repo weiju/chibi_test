@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <time.h>
 
 #include "chibi.h"
 
@@ -337,24 +340,64 @@ void chibi_suite_run_tap(chibi_suite *suite, chibi_summary_data *summary)
     if (summary) _chibi_suite_summary_data(suite, summary, 0);
 }
 
-void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary)
+static int create_dir_if_needed(const char *dir)
 {
+    if (mkdir(dir, S_IRWXU | S_IRGRP | S_IROTH) == -1) {
+        if (errno == EEXIST) return 1;
+        else {
+            fprintf(stderr, "can't create output directory\n");
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const char *outdir)
+{
+    if (!create_dir_if_needed(outdir)) return;
+
+    // take time stamp
+    time_t now = time(NULL);
+    int datetime_len = strlen("YYYYMMDDHHMMSS");
+    char datetime_buffer[datetime_len + 1];
+    datetime_buffer[datetime_len];
+    memset(datetime_buffer, 0, datetime_len + 1);  // clear memory
+    strftime(datetime_buffer, datetime_len, "%Y%m%d%H%M%S", localtime(&now));
+
+    // reserve enough space for full path
+    int buffer_len = strlen(outdir) + strlen(PATH_SEPARATOR) + strlen("TEST-") +
+        strlen(suite->name) + strlen("-YYYYMMDDHHMMSS") + strlen(".xml") + 1;
+    char *path_buffer = calloc(buffer_len, sizeof(char));
+
+    if (!path_buffer) return;
+    snprintf(path_buffer, buffer_len, "%s%sTEST-%s-%s.xml",
+             outdir, PATH_SEPARATOR, suite->name, datetime_buffer);
+
+    FILE *fp = fopen(path_buffer, "w");
+    if (!fp) {
+        free(path_buffer);
+        return;
+    }
+
     struct _chibi_testcase *cur = suite->head;
     _chibi_suite_run(suite, report_num_tests_silent, report_success_silent, report_fail_silent, 0, 0);
     if (summary) _chibi_suite_summary_data(suite, summary, 0);
-    puts("<?xml version=\"1.0\" ?>");
+    fputs("<?xml version=\"1.0\" ?>", fp);
     int num_tests = summary->num_failures + summary->num_pass;
-    printf("<testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
-           0, summary->num_failures, suite->name, num_tests, 0.123);
+    fprintf(fp, "<testsuite errors=\"%d\" failures=\"%d\" name=\"%s\" tests=\"%d\" time=\"%.03f\">\n",
+            0, summary->num_failures, suite->name, num_tests, 0.123);
     while (cur != NULL) {
-        printf("  <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
-               suite->name, cur->fname, 0.001);
+        fprintf(fp, "  <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
+                suite->name, cur->fname, 0.001);
         if (!cur->success) {
-            printf("    <failure type=\"%s\" message=\"%s\" />",
-                   "error", cur->error_msg);
+            fprintf(fp, "    <failure type=\"%s\" message=\"%s\" />",
+                    "error", cur->error_msg);
         }
-        puts("  </testcase>");
+        fputs("  </testcase>\n", fp);
         cur = cur->next;
     }
-    puts("</testsuite>");
+    fputs("</testsuite>\n", fp);
+
+    fclose(fp);
+    free(path_buffer);
 }
