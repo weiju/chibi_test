@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <time.h>
+
+#ifndef AMIGA
+#include <sys/stat.h>
+#include <sys/time.h>
+#endif
 
 #include "chibi.h"
 
@@ -265,6 +269,9 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
 {
     if (suite) {
         chibi_testcase *testcase;
+#ifndef AMIGA
+        struct timeval start_time, end_time;
+#endif
 
         if (suite->first_child) {
             tcnum = _chibi_suite_run(suite->first_child, report_num_tests,
@@ -282,6 +289,7 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
         testcase = suite->head;
         while (testcase) {
 #ifndef AMIGA
+            gettimeofday(&start_time, NULL);
             if (!setjmp(testcase->env)) {
 #endif
                 if (suite->setup) suite->setup(suite->userdata);
@@ -289,7 +297,11 @@ static int _chibi_suite_run(chibi_suite *suite, void (*report_num_tests)(int),
                 if (suite->teardown) suite->teardown(suite->userdata);
 #ifndef AMIGA
             }
+            gettimeofday(&end_time, NULL);
+            testcase->elapsed_millis = (end_time.tv_sec - start_time.tv_sec) * 1000 +
+                (end_time.tv_usec - start_time.tv_usec) / 1000.0;
 #endif
+
             if (testcase->success) report_success(tcnum, testcase);
             else report_fail(tcnum, testcase);
             testcase = testcase->next;
@@ -342,6 +354,7 @@ void chibi_suite_run_tap(chibi_suite *suite, chibi_summary_data *summary)
 
 static int create_dir_if_needed(const char *dir)
 {
+#ifndef AMIGA
     if (mkdir(dir, S_IRWXU | S_IRGRP | S_IROTH) == -1) {
         if (errno == EEXIST) return 1;
         else {
@@ -349,6 +362,9 @@ static int create_dir_if_needed(const char *dir)
             return 0;
         }
     }
+#else
+    // TODO: AmigaDOS equivalent
+#endif
     return 1;
 }
 
@@ -359,9 +375,7 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const 
     // take time stamp
     time_t now = time(NULL);
     int datetime_len = strlen("YYYYMMDDHHMMSS");
-    char datetime_buffer[datetime_len + 1];
-    datetime_buffer[datetime_len];
-    memset(datetime_buffer, 0, datetime_len + 1);  // clear memory
+    char *datetime_buffer = calloc(datetime_len + 1, sizeof(char));
     strftime(datetime_buffer, datetime_len, "%Y%m%d%H%M%S", localtime(&now));
 
     // reserve enough space for full path
@@ -369,12 +383,16 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const 
         strlen(suite->name) + strlen("-YYYYMMDDHHMMSS") + strlen(".xml") + 1;
     char *path_buffer = calloc(buffer_len, sizeof(char));
 
-    if (!path_buffer) return;
+    if (!path_buffer) {
+        free(datetime_buffer);
+        return;
+    }
     snprintf(path_buffer, buffer_len, "%s%sTEST-%s-%s.xml",
              outdir, PATH_SEPARATOR, suite->name, datetime_buffer);
 
     FILE *fp = fopen(path_buffer, "w");
     if (!fp) {
+        free(datetime_buffer);
         free(path_buffer);
         return;
     }
@@ -388,7 +406,7 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const 
             0, summary->num_failures, suite->name, num_tests, 0.123);
     while (cur != NULL) {
         fprintf(fp, "  <testcase classname=\"%s\" name=\"%s\" time=\"%.03f\">\n",
-                suite->name, cur->fname, 0.001);
+                suite->name, cur->fname, cur->elapsed_millis / 1000.0f);
         if (!cur->success) {
             fprintf(fp, "    <failure type=\"%s\" message=\"%s\" />",
                     "error", cur->error_msg);
@@ -399,5 +417,6 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const 
     fputs("</testsuite>\n", fp);
 
     fclose(fp);
+    free(datetime_buffer);
     free(path_buffer);
 }

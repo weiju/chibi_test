@@ -14,6 +14,7 @@ library for its core functionality.
   * supports TAP protocol etc. for automake
   * supports setup() and teardown()
   * nested test suites to support grouping
+  * can generate JUnit compatible XML test reports
 
 ## System Requirements
 

@@ -5,7 +5,6 @@ else
 CC=gcc
 CFLAGS=-std=c99 -pedantic -ftest-coverage -fprofile-arcs
 LDFLAGS=
-ts := $(shell /bin/date "+%Y%m%d%H%M%S")
 endif
 
 all: chibi_test

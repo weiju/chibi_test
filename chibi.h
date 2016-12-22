@@ -12,6 +12,7 @@ typedef struct _chibi_testcase {
     const char *fname;
     struct _chibi_testcase *next;
     int success;
+    int elapsed_millis;
     char *error_msg;
     void *userdata;
     jmp_buf env;
