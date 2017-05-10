@@ -4,3 +4,5 @@
 chibi_test
 coverage.xml
 test-reports
+.deps
+.dirstamp
