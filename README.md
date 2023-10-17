@@ -1,4 +1,4 @@
-# chibitest.c - A lightweight C Unit testing framework [![Build Status](https://travis-ci.org/weiju/chibi_test.svg)](https://travis-ci.org/weiju/chibi_test)
+# chibitest.c - A lightweight C Unit testing framework ![Build Status](https://github.com/weiju/chibi_test/actions/workflows/c-buildandtest.yml/badge.svg)
 
 ## Description
 
