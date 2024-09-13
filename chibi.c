@@ -368,6 +368,7 @@ static int create_dir_if_needed(const char *dir)
     return 1;
 }
 
+#ifndef AMIGA
 void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const char *outdir)
 {
     if (!create_dir_if_needed(outdir)) return;
@@ -420,3 +421,4 @@ void chibi_suite_run_xml(chibi_suite *suite, chibi_summary_data *summary, const 
     free(datetime_buffer);
     free(path_buffer);
 }
+#endif

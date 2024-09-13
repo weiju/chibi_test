@@ -181,11 +181,15 @@ int main(int argc, char **argv)
     chibi_suite_add_test(suite, Test_assert_eq_cstr_null_fail2);
     chibi_suite_add_test(suite, Test_assert_eq_cstr_null_success);
     chibi_suite_add_test(suite, Test_nested_suites);
+#ifdef AMIGA
+    chibi_suite_run(suite, &summary);
+#else
     if (argc > 1 && !strncmp("xml", argv[1], 3)) {
         chibi_suite_run_xml(suite, &summary, "test-reports");
     } else {
         chibi_suite_run(suite, &summary);
     }
+#endif
 
     chibi_suite_delete(suite);
     return summary.num_failures;
