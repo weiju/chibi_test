@@ -3,7 +3,8 @@ CC=vc +aos68k
 CFLAGS=-DAMIGA -c99
 else
 CC=gcc
-CFLAGS=-std=c99 -pedantic -ftest-coverage -fprofile-arcs
+#CFLAGS=-std=c99 -pedantic -ftest-coverage -fprofile-arcs
+CFLAGS=-std=c99 -pedantic
 LDFLAGS=
 endif
 
