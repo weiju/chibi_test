@@ -1,10 +1,9 @@
 ifdef AMIGA
-CC=vc +aos68k
+CC=vc +kick13
 CFLAGS=-DAMIGA -c99
 else
 CC=gcc
-#CFLAGS=-std=c99 -pedantic -ftest-coverage -fprofile-arcs
-CFLAGS=-std=c99 -pedantic
+CFLAGS=-std=c99 -pedantic -ftest-coverage -fprofile-arcs
 LDFLAGS=
 endif
 
